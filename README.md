@@ -5,7 +5,7 @@ This repository contains Erlang modules related to the standard standard
 - `mlog_handler`: a logger handler which writes to the group leader each
   message originated from. Originally provided in
   [erl-log-handler](https://github.com/exograd/erl-log-handler).
-- `mlog_formatter`: a logger formatter with support for both humand-readable
+- `mlog_formatter`: a logger formatter with support for both human-readable
   text and JSON. Originally provided in
   [erl-log-formatter](https://github.com/galdor/erl-log-formatter).
 
