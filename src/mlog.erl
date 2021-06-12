@@ -21,11 +21,16 @@ install() ->
   remove_all_handlers(),
   ok = logger:set_primary_config(primary_config()),
   ok = logger:add_handler(default, mlog_handler, default_handler()),
+  ok = logger:add_handler(debug, mlog_handler, debug_handler()),
   ok.
 
 -spec formatter_config() -> mlog_formatter:config().
 formatter_config() ->
   application:get_env(mlog, formatter, #{}).
+
+-spec debug_filters() -> [logger:filter()].
+debug_filters() ->
+  application:get_env(mlog, debug_filters, []).
 
 -spec remove_all_handlers() -> ok.
 remove_all_handlers() ->
@@ -53,4 +58,15 @@ default_handler() ->
        {sasl,
         {fun logger_filters:domain/2,
          {stop, sub, [otp, sasl]}}}],
+    formatter => {mlog_formatter, formatter_config()}}.
+
+-spec debug_handler() -> logger:handler_config().
+debug_handler() ->
+  MainFilter = {debug, {fun logger_filters:level/2,
+                        {stop, neq, debug}}},
+  ExtraFilters = debug_filters(),
+  #{config => #{type => standard_error},
+    level => debug,
+    filter_default => stop,
+    filters => [MainFilter | ExtraFilters],
     formatter => {mlog_formatter, formatter_config()}}.
