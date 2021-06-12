@@ -19,6 +19,7 @@
 -export([start/2, stop/1]).
 
 start(_StartType, _Args) ->
+  mlog:install(),
   mlog_sup:start_link().
 
 stop(_State) ->
