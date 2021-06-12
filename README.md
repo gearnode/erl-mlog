@@ -1,13 +1,10 @@
 # Project
-This repository contains Erlang modules related to the standard standard
-[`logger`](https://erlang.org/doc/man/logger.html) application:
+The erl-mlog project aims to provide a minimal usable configuration for the
+standard [`logger`](https://erlang.org/doc/man/logger.html) application.
 
-- `mlog_handler`: a logger handler which writes to the group leader each
-  message originated from. Originally provided in
-  [erl-log-handler](https://github.com/exograd/erl-log-handler).
-- `mlog_formatter`: a logger formatter with support for both human-readable
-  text and JSON. Originally provided in
-  [erl-log-formatter](https://github.com/galdor/erl-log-formatter).
+# Documentation
+A handbook is available [in the `doc`
+directory](https://github.com/exograd/erl-mlog/blob/master/doc/handbook.md).
 
 # Contact
 If you find a bug or have any question, feel free to open a GitHub issue or to
