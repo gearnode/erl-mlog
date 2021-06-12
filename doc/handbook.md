@@ -64,6 +64,8 @@ The `mlog_filters` provide various useful filters:
 
 - `fun mlog_filters:print/2`: print and pass all log events; useful for
   debugging.
+- `fun mlog_filters:gen_server_report/2`: either log or drop `gen_server`
+  report events. The argument is either `log` or `stop`.
 
 # Default configuration
 The `mlog:install/0` function can be used to install a default configuration
@@ -80,6 +82,8 @@ With this default configuration, two handlers are created:
     their utility is debatable.
   - SASL messages: they tend to be extremely verbose and their utility is
     debatable.
+  - `gen_server` reports, which are not actionable since they only log a pid
+    and therefore do not allow to actually identify the process which failed.
 - `debug` only accept messages with a `debug` level and blocks all of them by
   default. The user can provide a list of additional filters with the
   `debug_filters` option. For example, to log all messages in a sub-domain of

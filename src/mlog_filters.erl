@@ -14,9 +14,20 @@
 
 -module(mlog_filters).
 
--export([print/2]).
+-export([print/2, gen_server_report/2]).
 
 -spec print(logger:log_event(), term()) -> logger:filter_return().
 print(Event, _) ->
   io:format("~tp~n", [Event]),
+  Event.
+
+-spec gen_server_report(logger:log_event(), log | stop) ->
+        logger:filter_return().
+gen_server_report(Event = #{msg := {report, #{label := {gen_server, _}}}},
+                  Action) ->
+  case Action of
+    log -> Event;
+    stop -> stop
+  end;
+gen_server_report(Event, _) ->
   Event.
