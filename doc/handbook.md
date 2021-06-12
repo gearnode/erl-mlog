@@ -94,3 +94,6 @@ The following options are available:
 - `debug_filters`: a list of [logger
   filters](https://erlang.org/doc/apps/kernel/logger_chapter.html#filters)
   applied to the debug handler.
+- `level`: the primary logger level (default: `debug`). Note that due to the
+  way the standard logger works, events with a level lower than the primary
+  level will be dropped even if a handler has a lower level.
