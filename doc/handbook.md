@@ -20,21 +20,21 @@ The `mlog_formatter` module provides a human-readable text output and a JSON
 output.
 
 ## Features
-## Metadata
+### Metadata
 The following metadata entry are handled separately:
 - `domain`: see the [official
   documentation](https://erlang.org/doc/man/logger_filters.html#domain-2) for
   more information.
 - `event`: a list of atoms identifying what is being logged.
 
-## Text output
+### Text output
 In text mode, the formatter returns one or more lines of text representing the
 log message. Messages are prefixed with the log level, domain string (if
 present) and event string (if present). If metadata are associated with the
 message, they are printed on a separate line, formatted as a sequence of
 "key=value" strings.
 
-## JSON output
+### JSON output
 In JSON mode, the formatter returns a JSON object serialized as a single line
 of text for each log message.
 
@@ -50,7 +50,7 @@ The following members are used:
 - `message`: the message string.
 - `data`: an object containing metadata associated with the message.
 
-## Configuration
+### Configuration
 The following options are available:
 - `debug`: print log events on the default output; used when developing the
   formatter itself.
