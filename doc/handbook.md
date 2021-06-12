@@ -59,6 +59,12 @@ The following options are available:
   only).
 - `color`: colorize log entries (`text` format only).
 
+## Filtering
+The `mlog_filters` provide various useful filters:
+
+- `fun mlog_filters:print/2`: print and pass all log events; useful for
+  debugging.
+
 # Default configuration
 The `mlog:install/0` function can be used to install a default configuration
 for the `logger` application. Starting the `mlog` application will call
