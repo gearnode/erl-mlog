@@ -26,7 +26,7 @@ install() ->
 
 -spec formatter_config() -> mlog_formatter:config().
 formatter_config() ->
-  application:get_env(mlog, formatter, #{}).
+  application:get_env(mlog, formatter, #{color => true}).
 
 -spec debug_filters() -> [logger:filter()].
 debug_filters() ->
