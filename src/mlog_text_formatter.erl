@@ -139,7 +139,7 @@ indent_text(Text, Column) ->
                      mlog_formatter:config()) ->
         unicode:chardata().
 maybe_colorize(String, Color, Config) ->
-  case maps:get(color, Config, false) of
+  case maps:get(color, Config, true) of
     true ->
       term:with_text_attributes(String, [{foreground, Color}]);
     false ->
