@@ -1,0 +1,8 @@
+[{<<"json">>,
+  {git,"https://github.com/galdor/erl-json.git",
+       {ref,"6549a08a4ece8ed2fc2d8857cfe722546be5fec8"}},
+  0},
+ {<<"term">>,
+  {git,"https://github.com/exograd/erl-term.git",
+       {ref,"8b7a0a6fa961ceb73c3b0e5dfdaa594fa7ca2691"}},
+  0}].
