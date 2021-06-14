@@ -18,10 +18,21 @@
 
 -spec install() -> ok.
 install() ->
+  %% We have to both update the system configuration and modify the logger
+  %% dynamically. Some applications such as the Rebar3 shell plugin will use
+  %% the system configuration to reset the logger, and this is unfortunately
+  %% cannot be disabled.
   remove_all_handlers(),
-  ok = logger:set_primary_config(primary_config()),
-  ok = logger:add_handler(default, mlog_handler, default_handler()),
-  ok = logger:add_handler(debug, mlog_handler, debug_handler()),
+  (PrimaryConfig = #{level := Level}) = primary_config(),
+  DefaultHandler = default_handler(),
+  DebugHandler = debug_handler(),
+  application:set_env(kernel, logger_level, Level),
+  application:set_env(kernel, logger,
+                      [{handler, default, mlog_handler, DefaultHandler},
+                       {handler, debug, mlog_handler, DebugHandler}]),
+  ok = logger:set_primary_config(PrimaryConfig),
+  ok = logger:add_handler(default, mlog_handler, DefaultHandler),
+  ok = logger:add_handler(debug, mlog_handler, DebugHandler),
   ok.
 
 -spec formatter_config() -> mlog_formatter:config().
