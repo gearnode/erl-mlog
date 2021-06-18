@@ -70,8 +70,6 @@ default_handler() ->
         {fun logger_filters:progress/2, stop}},
        {remote_group_leader,
         {fun logger_filters:remote_gl/2, stop}},
-       {sasl,
-        {fun logger_filters:domain/2, {stop, sub, [otp, sasl]}}},
        {gen_server,
         {fun mlog_filters:gen_server_report/2, stop}}],
     formatter => {mlog_formatter, formatter_config()}}.
