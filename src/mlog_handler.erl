@@ -18,7 +18,11 @@
 
 -spec log(logger:log_event(), logger:handler_config()) -> ok.
 log(Event = #{meta := Metadata}, Config) ->
-  Device = maps:get(gl, Metadata, group_leader()),
+  Self = self(),
+  Device = case maps:get(gl, Metadata, group_leader()) of
+             Self -> standard_error;
+             GroupLeader -> GroupLeader
+           end,
   Message = format_event(Event, Config),
   io:format(Device, "~ts", [Message]).
 
