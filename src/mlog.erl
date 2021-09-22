@@ -20,7 +20,7 @@
 install() ->
   %% We have to both update the system configuration and modify the logger
   %% dynamically. Some applications such as the Rebar3 shell plugin will use
-  %% the system configuration to reset the logger, and this is unfortunately
+  %% the system configuration to reset the logger, and this unfortunately
   %% cannot be disabled.
   remove_all_handlers(),
   (PrimaryConfig = #{level := Level}) = primary_config(),
