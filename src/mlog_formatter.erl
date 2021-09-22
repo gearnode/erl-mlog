@@ -25,7 +25,9 @@
         #{debug => boolean(),
           format => format(),
           include_time => boolean(),
-          color => boolean()}.
+          color => boolean(),
+          print_width => pos_integer(),
+          max_depth => pos_integer()}.
 
 -type msg() ::
         {io:format(), [term()]}
@@ -73,7 +75,7 @@ format_msg({report, Report}, Level, Metadata, Config) ->
              Config);
 
 format_msg({Format, Args}, Level, Metadata, Config) ->
-  String = io_lib:format(Format, Args),
+  String = format_string(Format, Args, Config),
   format_msg({string, String}, Level, Metadata, Config).
 
 -spec format_level(logger:level()) -> unicode:chardata().
@@ -117,3 +119,27 @@ format_metadata_value(V) ->
 format_term(Term) ->
   Data = io_lib:format(<<"~0tp">>, [Term]),
   unicode:characters_to_binary(Data).
+
+-spec format_string(io:format(), [term()], config()) -> iodata().
+format_string(FormatString, Args, Config) ->
+  PrintWidth = maps:get(print_width, Config, 160),
+  MaxDepth = maps:get(max_depth, Config, 10),
+  Format = io_lib:scan_format(FormatString, Args),
+  Format2 = reformat(Format, PrintWidth, MaxDepth, []),
+  io_lib:build_text(Format2).
+
+-spec reformat(io:format(), pos_integer(), pos_integer(), io:format()) ->
+        io:format().
+reformat([Spec = #{control_char := $w} | Rest], W, D, Acc) ->
+  reformat([Spec#{control_char => $W} | Rest], W, D, Acc);
+reformat([Spec = #{control_char := $W, args := Args} | Rest], W, D, Acc) ->
+  reformat(Rest, W, D, [Spec#{width => W, args => Args ++ [D]} | Acc]);
+reformat([Spec = #{control_char := $p} | Rest], W, D, Acc) ->
+  reformat([Spec#{control_char => $P} | Rest], W, D, Acc);
+reformat([Spec = #{control_char := $P, args := Args} | Rest], W, D, Acc) ->
+  reformat(Rest, W, D, [Spec#{width => W, args => Args ++ [D]} | Acc]);
+reformat([C | Rest], W, D, Acc) ->
+  reformat(Rest, W, D, [C | Acc]);
+reformat([], _, _, Acc) ->
+  lists:reverse(Acc).
+
