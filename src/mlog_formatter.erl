@@ -132,7 +132,7 @@ format_term(Term) ->
 -spec format_string(io:format(), [term()], config()) -> iodata().
 format_string(FormatString, Args, Config) ->
   PrintWidth = maps:get(print_width, Config, 160),
-  MaxDepth = maps:get(max_depth, Config, 10),
+  MaxDepth = maps:get(max_depth, Config, 50),
   Format = io_lib:scan_format(FormatString, Args),
   Format2 = reformat(Format, PrintWidth, MaxDepth, []),
   io_lib:build_text(Format2).
