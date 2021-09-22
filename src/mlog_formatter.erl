@@ -21,15 +21,16 @@
 
 -type format() :: text | json.
 
--type config() :: #{debug => boolean(),
-                    format => format(),
-                    include_time => boolean(),
-                    color => boolean(),
-                    atom() => any()}.
+-type config() ::
+        #{debug => boolean(),
+          format => format(),
+          include_time => boolean(),
+          color => boolean()}.
 
--type msg() :: {io:format(), [term()]}
-             | {report, logger:report()}
-             | {string, unicode:chardata()}.
+-type msg() ::
+        {io:format(), [term()]}
+      | {report, logger:report()}
+      | {string, unicode:chardata()}.
 
 -spec format(logger:log_event(), config()) ->
         unicode:chardata().
