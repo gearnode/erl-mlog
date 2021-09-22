@@ -142,7 +142,7 @@ format_string(FormatString, Args, Config) ->
 reformat([Spec = #{control_char := $w} | Rest], W, D, Acc) ->
   reformat([Spec#{control_char => $W} | Rest], W, D, Acc);
 reformat([Spec = #{control_char := $W, args := Args} | Rest], W, D, Acc) ->
-  reformat(Rest, W, D, [Spec#{width => W, args => Args ++ [D]} | Acc]);
+  reformat(Rest, W, D, [Spec#{args => Args ++ [D]} | Acc]);
 reformat([Spec = #{control_char := $p} | Rest], W, D, Acc) ->
   reformat([Spec#{control_char => $P} | Rest], W, D, Acc);
 reformat([Spec = #{control_char := $P, args := Args} | Rest], W, D, Acc) ->
@@ -151,4 +151,3 @@ reformat([C | Rest], W, D, Acc) ->
   reformat(Rest, W, D, [C | Acc]);
 reformat([], _, _, Acc) ->
   lists:reverse(Acc).
-
