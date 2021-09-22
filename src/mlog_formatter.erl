@@ -27,7 +27,8 @@
           include_time => boolean(),
           color => boolean(),
           print_width => pos_integer(),
-          max_depth => pos_integer()}.
+          max_depth => pos_integer(),
+          max_line_Length => pos_integer()}.
 
 -type msg() ::
         {io:format(), [term()]}
@@ -37,13 +38,21 @@
 -spec format(logger:log_event(), config()) ->
         unicode:chardata().
 format(Event = #{level := Level, msg := Msg, meta := Metadata}, Config) ->
-  case maps:get(debug, Config, false) of
-    true ->
-      io:format("log event:~n~p~n", [Event]);
-    false ->
-      ok
-  end,
-  format_msg(Msg, Level, Metadata, Config).
+  maybe_log(Event, Config),
+  maybe_truncate(format_msg(Msg, Level, Metadata, Config), Config).
+
+-spec maybe_log(logger:log_event(), config()) -> ok.
+maybe_log(Event, #{debug := true}) ->
+  io:format("log event:~n~p~n", [Event]);
+maybe_log(_, _) ->
+  ok.
+
+-spec maybe_truncate(unicode:chardata(), config()) -> unicode:chardata().
+maybe_truncate(String, #{max_line_Length := MaxLength0}) ->
+  MaxLength = max(MaxLength0-3, 0),
+  [string:slice(String, 0, MaxLength), "...\n"];
+maybe_truncate(String, _) ->
+  String.
 
 -spec format_msg(msg(), logger:level(), logger:metadata(), config()) ->
         unicode:chardata().
