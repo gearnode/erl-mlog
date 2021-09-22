@@ -58,6 +58,12 @@ The following options are available:
 - `include_time`: include the time in each formatted message (`text` format
   only).
 - `color`: colorize log entries (`text` format only).
+- `print_width`: the maximum line length used when formatting terms (default:
+  160).
+- `max_depth`: the maximum print depth used when formatting terms (default:
+  10).
+- `max_line_length`: the maximum log line length as a number of grapheme
+  clusters; longer lines will be truncated and a `...` suffix will be added.
 
 ## Filtering
 The `mlog_filters` provide various useful filters:
