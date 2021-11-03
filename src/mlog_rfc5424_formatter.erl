@@ -12,7 +12,7 @@
 %% ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
 %% IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
--module(mlog_rfc_5424_formatter).
+-module(mlog_rfc5424_formatter).
 
 -include_lib("kernel/include/inet.hrl").
 
