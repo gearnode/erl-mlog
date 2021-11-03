@@ -150,10 +150,9 @@ msgid(_) ->
 % https://datatracker.ietf.org/doc/html/rfc5424#section-6.3
 -spec structured_data(logger:metadata()) -> iodata().
 structured_data(Metadata0) ->
-  KS = [domain, time, error_logger, logger_formatter, report_cb, gl],
+  KS = [time, error_logger, logger_formatter, report_cb, gl],
   Metadata = maps:without(KS, Metadata0),
-  Domain = mlog_formatter:format_domain(maps:get(domain, Metadata0, [])),
-  [sd_element("mlog@32473", Metadata#{domain => Domain})].
+  [sd_element("mlog@32473", Metadata)].
 
 % https://datatracker.ietf.org/doc/html/rfc5424#section-6.3.1
 -spec sd_element(string(), map()) -> iodata().
@@ -163,6 +162,8 @@ sd_element(Id, Metadata) ->
 
 % https://datatracker.ietf.org/doc/html/rfc5424#section-6.3.3
 -spec sd_param(atom(), term(), iodata()) -> iodata().
+sd_param(domain, Value, Acc) ->
+  [["domain", $=, $", mlog_formatter:format_domain(Value), $"] | Acc];
 sd_param(Key, Value, Acc) when is_integer(Value) ->
   [[atom_to_binary(Key), $=, $", integer_to_binary(Value), $"] | Acc];
 sd_param(Key, Value, Acc) when is_float(Value) ->
