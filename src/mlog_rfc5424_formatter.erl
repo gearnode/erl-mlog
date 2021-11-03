@@ -30,7 +30,7 @@ format(Bin, Level, Metadata, Config) ->
 % https://datatracker.ietf.org/doc/html/rfc5424#section-6.2
 -spec header(logger:level(), logger:metadata(), config()) -> iodata().
 header(Level, Metadata, Config) ->
-  lists:join($\s, [pri(Level), version(), timestamp(Metadata), hostname(),
+  lists:join($\s, [[pri(Level), version()], timestamp(Metadata), hostname(),
                    app_name(Config), procid(), msgid(Metadata)]).
 
 % https://datatracker.ietf.org/doc/html/rfc5424#section-6.2.1
