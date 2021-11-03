@@ -177,6 +177,8 @@ sd_param(_, _, Acc) ->
   Acc.
 
 -spec escape(binary(), binary()) -> binary().
+escape(<<>>, Acc) ->
+  Acc;
 escape(<<$", Rest/binary>>, Acc) ->
   escape(Rest, <<Acc/binary, $\\, $">>);
 escape(<<$\\, Rest/binary>>, Acc) ->
