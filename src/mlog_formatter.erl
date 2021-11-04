@@ -19,7 +19,7 @@
 
 -export_type([format/0, config/0, msg/0]).
 
--type format() :: text | json.
+-type format() :: text | json | rfc5424.
 
 -type config() ::
         #{debug => boolean(),
@@ -62,6 +62,8 @@ format_msg({string, String}, Level, Metadata, Config) ->
     text ->
       mlog_text_formatter:format(String, Level, Metadata, Config);
     json ->
+      mlog_json_formatter:format(String, Level, Metadata, Config);
+    rfc5424 ->
       mlog_json_formatter:format(String, Level, Metadata, Config);
     Format ->
       error({unknown_format, Format})
