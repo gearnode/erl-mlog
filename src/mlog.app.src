@@ -21,7 +21,6 @@
    [kernel,
     stdlib,
     term,
-    inet,
     json]},
   {env, []},
   {modules, []},
