@@ -16,6 +16,8 @@
 
 -include_lib("kernel/include/inet.hrl").
 
+-define(BOM, [16#EF, 16#BB, 16#BF]).
+
 -export([format/4]).
 
 -type config() :: mlog_formatter:config().
@@ -173,7 +175,7 @@ sd_param(Key, Value, Acc) when is_atom(Value) ->
 sd_param(Key, Value0, Acc) when is_binary(Value0) ->
   BOM = [16#EF, 16#BB, 16#BF],
   Value = unicode:characters_to_binary(escape(Value0, <<>>)),
-  [[atom_to_binary(Key), $=, $", BOM, Value, $"] | Acc];
+  [[atom_to_binary(Key), $=, $", ?BOM, Value, $"] | Acc];
 sd_param(_, _, Acc) ->
   Acc.
 
@@ -194,5 +196,4 @@ escape(<<A, Rest/binary>>, Acc) ->
 % https://datatracker.ietf.org/doc/html/rfc5424#section-6.4
 -spec msg(iodata()) -> binary().
 msg(String) ->
-  BOM = [16#EF, 16#BB, 16#BF],
-  unicode:characters_to_binary([BOM, String]).
+  unicode:characters_to_binary([?BOM, String]).
