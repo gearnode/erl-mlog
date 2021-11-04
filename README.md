@@ -1,4 +1,4 @@
-# Project
+# Introduction
 The erl-mlog project aims to provide a minimal usable configuration for the
 standard [`logger`](https://erlang.org/doc/man/logger.html) application.
 
