@@ -22,10 +22,10 @@
 
 -spec format(unicode:chardata(), logger:level(), logger:metadata(), config())
             -> unicode:chardata().
-format(Bin, Level, Metadata, Config) ->
+format(String, Level, Metadata, Config) ->
   lists:join($\s, [header(Level, Metadata, Config),
                    structured_data(Metadata),
-                   msg(Bin)]).
+                   msg(String)]).
 
 % https://datatracker.ietf.org/doc/html/rfc5424#section-6.2
 -spec header(logger:level(), logger:metadata(), config()) -> iodata().
@@ -193,6 +193,6 @@ escape(<<A, Rest/binary>>, Acc) ->
 
 % https://datatracker.ietf.org/doc/html/rfc5424#section-6.4
 -spec msg(iodata()) -> binary().
-msg(Msg) ->
+msg(String) ->
   BOM = [16#EF, 16#BB, 16#BF],
-  unicode:characters_to_binary([BOM, Msg]).
+  unicode:characters_to_binary([BOM, String]).
