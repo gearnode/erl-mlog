@@ -159,8 +159,12 @@ structured_data(Metadata0) ->
 % https://datatracker.ietf.org/doc/html/rfc5424#section-6.3.1
 -spec sd_element(string(), map()) -> iodata().
 sd_element(Id, Metadata) ->
-  Params = maps:fold(fun sd_param/3, [], Metadata),
-  [$[, Id, $\s, lists:join($\s, Params), $]].
+  case maps:fold(fun sd_param/3, [], Metadata) of
+    [] ->
+      [$[, Id, $]];
+    Params ->
+      [$[, Id, $\s, lists:join($\s, Params), $]]
+  end.
 
 % https://datatracker.ietf.org/doc/html/rfc5424#section-6.3.3
 -spec sd_param(atom(), term(), iodata()) -> iodata().
