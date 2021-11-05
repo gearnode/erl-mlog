@@ -52,7 +52,7 @@ init([Options]) ->
   Transport = maps:get(transport, Options, tcp),
   Host = maps:get(host, Options, <<"127.0.0.1">>),
   Port = maps:get(port, Options, 6514),
-  ConnectOptions = [{active, false}] ++ options_connect_options(Options),
+  ConnectOptions = [{active, true}] ++ options_connect_options(Options),
   HostAddress = host_address(Host),
   ConnectFun = case Transport of
                  tcp -> fun gen_tcp:connect/4;
@@ -89,6 +89,13 @@ handle_call({send, Msg}, _, #{transport := T, socket := S} = State) ->
 
 -spec handle_cast(term(), state()) -> et_gen_server:handle_cast_ret(state()).
 handle_cast(_, State) ->
+  {noreply, State}.
+
+-spec handle_info(term(), state()) -> et_gen_server:handle_info_ret(state()).
+handle_info({Event, _}, State) when Event =:= tcp_closed;
+                                    Event =:= ssl_closed ->
+  exit(normal);
+handle_info(Msg, State) ->
   {noreply, State}.
 
 -spec options_connect_options(options()) -> [Options] when
