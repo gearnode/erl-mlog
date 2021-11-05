@@ -16,9 +16,9 @@
 
 -behaviour(gen_server).
 
--export([start_link/1, init/1, terminate/2, stop/1]).
+-export([start_link/2, init/1, terminate/2, stop/1]).
 
--export([handle_call/3, handle_cast/2]).
+-export([handle_call/3, handle_cast/2, handle_info/2]).
 
 -export([writeSync/2]).
 
@@ -38,10 +38,10 @@
 writeSync(Ref, Message) ->
   gen_server:call(Ref, {send, Message}, infinity). 
 
--spec start_link(options()) -> Result when
+-spec start_link(et_gen_server:name(), options()) -> Result when
     Result :: {ok, pid()} | ignore | {error, term()}.
-start_link(Options) ->
-  gen_server:start_link(?MODULE, [Options], []).
+start_link(Name, Options) ->
+  gen_server:start_link(Name, ?MODULE, [Options], []).
 
 -spec stop(et_gen_server:ref()) -> ok.
 stop(Ref) ->
