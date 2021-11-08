@@ -23,7 +23,9 @@ start_link() ->
   supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 init([]) ->
-  Children = [],
+  Children = [#{id => syslog_default,
+                start =>
+                  {mlog_syslog_device, start_link, [{local, syslog}, #{}]}}],
   Flags = #{strategy => one_for_one,
             intensity => 1,
             period => 5},
