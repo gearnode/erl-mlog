@@ -23,6 +23,7 @@
     term,
     ssl,
     et,
+    backoff,
     public_key,
     uri,
     json]},
