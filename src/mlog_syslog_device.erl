@@ -12,7 +12,7 @@
 %% ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
 %% IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
--module(mlog_backend_syslog).
+-module(mlog_syslog_device).
 
 -behaviour(gen_server).
 
@@ -32,7 +32,10 @@
 
 -type state() :: #{options := options(),
                    transport := tls | tcp,
-                   socket := inet:socket() | ssl:sslsocket()}.
+                   socket := inet:socket() | ssl:sslsocket(),
+                   queue => [unicode:chardata()],
+                   queue_length => non_neg_integer(),
+                   backoff => backoff:backoff()}.
 
 -spec writeSync(et_gen_server:ref(), unicode:chardata()) -> ok.
 writeSync(Ref, Message) ->
@@ -49,22 +52,13 @@ stop(Ref) ->
 
 -spec init(list()) -> et_gen_server:init_ret(state()).
 init([Options]) ->
-  Transport = maps:get(transport, Options, tcp),
-  Host = maps:get(host, Options, <<"127.0.0.1">>),
-  Port = maps:get(port, Options, 6514),
-  ConnectOptions = [{active, true}] ++ options_connect_options(Options),
-  HostAddress = host_address(Host),
-  ConnectFun = case Transport of
-                 tcp -> fun gen_tcp:connect/4;
-                 tls -> fun ssl:connect/4
-               end,
-  case ConnectFun(HostAddress, Port, ConnectOptions, 10) of
-    {ok, Socket} ->
-      State = #{options => Options, transport => Transport, socket => Socket},
-      {ok, State};
-    {error, Reason} ->
-      exit(Reason)
-  end.
+  self() ! connect,
+  Backoff = backoff:type(backoff:init(1000, 60000), jitter),
+  State = #{options => Options,
+            backoff => Backoff,
+            queue_length => 0,
+            queue => []},
+  {ok, State}.
 
 -spec terminate(et_gen_server:terminate_reason(), state()) -> ok.
 terminate(_Reason, #{transport := tcp, socket := Socket}) ->
@@ -92,11 +86,34 @@ handle_cast(_, State) ->
   {noreply, State}.
 
 -spec handle_info(term(), state()) -> et_gen_server:handle_info_ret(state()).
-handle_info({Event, _}, State) when Event =:= tcp_closed;
-                                    Event =:= ssl_closed ->
-  exit(normal);
-handle_info(Msg, State) ->
-  {noreply, State}.
+handle_info({Event, _}, #{backoff := Backoff} = State) when
+    Event =:= tcp_closed;
+    Event =:= ssl_closed ->
+  NewState = maps:without([transport, socket], State),
+  timer:send_after(backoff:get(Backoff), self(), connect),
+  {noreply, NewState};
+
+handle_info(connect, #{options := Options, backoff := Backoff0} = State) ->
+  Transport = maps:get(transport, Options, tcp),
+  Host = maps:get(host, Options, <<"127.0.0.1">>),
+  Port = maps:get(port, Options, 6514),
+  ConnectOptions = [{active, true}] ++ options_connect_options(Options),
+  HostAddress = host_address(Host),
+  ConnectFun = case Transport of
+                 tcp -> fun gen_tcp:connect/4;
+                 tls -> fun ssl:connect/4
+               end,
+  case ConnectFun(HostAddress, Port, ConnectOptions, 10) of
+    {ok, Socket} ->
+      {_, Backoff} = backoff:succeed(Backoff0),
+      {noreply,
+       State#{socket => Socket, transport => Transport, backoff => Backoff}};
+    {error, Reason} ->
+      {_, Backoff} = backoff:fail(Backoff0),
+      timer:send_after(backoff:get(Backoff), self(), connect),
+      {noreply,
+       State#{backoff => Backoff}}
+  end.
 
 -spec options_connect_options(options()) -> [Options] when
     Options :: tcp_option() | tls_option().
