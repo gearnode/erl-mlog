@@ -31,11 +31,10 @@
 -type tls_option() :: ssl:tls_client_option().
 
 -type state() :: #{options := options(),
-                   transport := tls | tcp,
-                   socket := inet:socket() | ssl:sslsocket(),
-                   queue => [unicode:chardata()],
-                   queue_length => non_neg_integer(),
-                   backoff => backoff:backoff()}.
+                   transport => tls | tcp,
+                   socket := inet:socket() | ssl:sslsocket() | undefined,
+                   queue := queue:queue(unicode:chardata()),
+                   backoff := backoff:backoff()}.
 
 -spec writeSync(et_gen_server:ref(), unicode:chardata()) -> ok.
 writeSync(Ref, Message) ->
@@ -56,8 +55,8 @@ init([Options]) ->
   Backoff = backoff:type(backoff:init(1000, 60000), jitter),
   State = #{options => Options,
             backoff => Backoff,
-            queue_length => 0,
-            queue => []},
+            socket => undefined,
+            queue => queue:new()},
   {ok, State}.
 
 -spec terminate(et_gen_server:terminate_reason(), state()) -> ok.
@@ -69,15 +68,19 @@ terminate(_Reason, #{transport := tls, socket := Socket}) ->
 
 -spec handle_call(term(), {pid(), et_gen_server:request_id()}, state()) ->
         et_gen_server:handle_call_ret(state()).
-handle_call({send, Msg}, _, #{transport := T, socket := S} = State) ->
+handle_call({send, Msg}, _, #{socket := undefined, queue := Queue} = State) ->
+  {reply, ok, State#{queue => queue:in(Msg, Queue)}};
+handle_call({send, Msg}, _,
+            #{transport := T, socket := S, queue := Q} = State) ->
   Len = iolist_size(Msg),
   Frame = [integer_to_binary(Len), $\s, Msg],
   Send = case T of tcp -> fun gen_tcp:send/2; tls -> fun ssl:send/2 end,
   case Send(S, Frame) of
     ok ->
       {reply, ok, State};
-    {error, Reason} ->
-      {stop, Reason, State}
+    {error, _} ->
+      self() ! connect,
+      {reply, ok, State#{socket => undefined, queue => queue:in(Msg, Q)}}
   end.
 
 -spec handle_cast(term(), state()) -> et_gen_server:handle_cast_ret(state()).
@@ -88,9 +91,8 @@ handle_cast(_, State) ->
 handle_info({Event, _}, #{backoff := Backoff} = State) when
     Event =:= tcp_closed;
     Event =:= ssl_closed ->
-  NewState = maps:without([transport, socket], State),
   timer:send_after(backoff:get(Backoff), self(), connect),
-  {noreply, NewState};
+  {noreply, State#{socket => undefined}};
 
 handle_info(connect, #{options := Options, backoff := Backoff0} = State) ->
   Transport = maps:get(transport, Options, tcp),
@@ -105,13 +107,32 @@ handle_info(connect, #{options := Options, backoff := Backoff0} = State) ->
   case ConnectFun(HostAddress, Port, ConnectOptions, 10) of
     {ok, Socket} ->
       {_, Backoff} = backoff:succeed(Backoff0),
+      self() ! flush,
       {noreply,
        State#{socket => Socket, transport => Transport, backoff => Backoff}};
-    {error, Reason} ->
+    {error, _} ->
       {_, Backoff} = backoff:fail(Backoff0),
       timer:send_after(backoff:get(Backoff), self(), connect),
       {noreply,
-       State#{backoff => Backoff}}
+       State#{socket := undefined, backoff => Backoff}}
+  end;
+
+handle_info(flush, #{transport := T, socket := S, queue := Q} = State) ->
+  case queue:peek(Q) of
+    {value, Msg} ->
+      Len = iolist_size(Msg),
+      Frame = [integer_to_binary(Len), $\s, Msg],
+      Send = case T of tcp -> fun gen_tcp:send/2; tls -> fun ssl:send/2 end,
+      case Send(S, Frame) of
+        ok ->
+          self() ! flush,
+          {noreply, State#{queue => queue:drop(Q)}};
+        {error, _} ->
+          self() ! connect,
+          {noreply, State#{socket => undefined}}
+      end;
+    empty ->
+      {noreply, State#{queue => queue:new()}}
   end.
 
 -spec options_connect_options(options()) -> [Options] when
