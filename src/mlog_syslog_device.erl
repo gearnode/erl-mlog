@@ -62,10 +62,9 @@ init([Options]) ->
 
 -spec terminate(et_gen_server:terminate_reason(), state()) -> ok.
 terminate(_Reason, #{transport := tcp, socket := Socket}) ->
-  gen_tcp:close(Socket),
-  ok;
+  gen_tcp:close(Socket);
 terminate(_Reason, #{transport := tls, socket := Socket}) ->
-  ssl:close(Socket),
+  _ = ssl:close(Socket),
   ok.
 
 -spec handle_call(term(), {pid(), et_gen_server:request_id()}, state()) ->
