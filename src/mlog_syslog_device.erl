@@ -20,7 +20,7 @@
 
 -export([handle_call/3, handle_cast/2, handle_info/2]).
 
--export([writeSync/2]).
+-export([write_sync/2]).
 
 -type options() :: #{host => uri:host(),
                      port => uri:port_number(),
@@ -36,8 +36,8 @@
                    queue := queue:queue(unicode:chardata()),
                    backoff := backoff:backoff()}.
 
--spec writeSync(et_gen_server:ref(), unicode:chardata()) -> ok.
-writeSync(Ref, Message) ->
+-spec write_sync(et_gen_server:ref(), unicode:chardata()) -> ok.
+write_sync(Ref, Message) ->
   gen_server:call(Ref, {send, Message}, infinity). 
 
 -spec start_link(et_gen_server:name(), options()) -> Result when
