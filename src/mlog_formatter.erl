@@ -64,7 +64,7 @@ format_msg({string, String}, Level, Metadata, Config) ->
     json ->
       mlog_json_formatter:format(String, Level, Metadata, Config);
     rfc5424 ->
-      mlog_json_formatter:format(String, Level, Metadata, Config);
+      mlog_rfc5424_formatter:format(String, Level, Metadata, Config);
     Format ->
       error({unknown_format, Format})
   end;
