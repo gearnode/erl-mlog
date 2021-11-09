@@ -73,7 +73,7 @@ handle_cast(_, State) ->
 handle_info({Event, _}, #{backoff := Backoff} = State) when
     Event =:= tcp_closed;
     Event =:= ssl_closed ->
-  timer:send_after(backoff:get(Backoff), self(), connect),
+  erlang:send_after(backoff:get(Backoff), self(), connect),
   {noreply, State#{socket => undefined}};
 
 handle_info(connect, #{options := Options, backoff := Backoff0} = State) ->
@@ -94,7 +94,7 @@ handle_info(connect, #{options := Options, backoff := Backoff0} = State) ->
        State#{socket => Socket, transport => Transport, backoff => Backoff}};
     {error, _} ->
       {_, Backoff} = backoff:fail(Backoff0),
-      timer:send_after(backoff:get(Backoff), self(), connect),
+      erlang:send_after(backoff:get(Backoff), self(), connect),
       {noreply,
        State#{socket := undefined, backoff => Backoff}}
   end;
