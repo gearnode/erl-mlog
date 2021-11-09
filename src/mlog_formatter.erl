@@ -24,7 +24,6 @@
 -type config() ::
         #{debug => boolean(),
           format => format(),
-          application_name => unicode:chardata(),
           include_time => boolean(),
           color => boolean(),
           print_width => pos_integer(),
