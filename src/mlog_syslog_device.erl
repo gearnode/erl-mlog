@@ -20,8 +20,6 @@
 
 -export([handle_call/3, handle_cast/2, handle_info/2]).
 
--export([write_sync/2]).
-
 -type options() :: #{host => uri:host(),
                      port => uri:port_number(),
                      tcp_options => [tcp_option()],
@@ -35,10 +33,6 @@
                    socket := inet:socket() | ssl:sslsocket() | undefined,
                    queue := queue:queue(unicode:chardata()),
                    backoff := backoff:backoff()}.
-
--spec write_sync(et_gen_server:ref(), unicode:chardata()) -> ok.
-write_sync(Ref, Message) ->
-  gen_server:call(Ref, {send, Message}, infinity). 
 
 -spec start_link(et_gen_server:name(), options()) -> Result when
     Result :: {ok, pid()} | ignore | {error, term()}.
@@ -68,20 +62,8 @@ terminate(_Reason, #{transport := tls, socket := Socket}) ->
 
 -spec handle_call(term(), {pid(), et_gen_server:request_id()}, state()) ->
         et_gen_server:handle_call_ret(state()).
-handle_call({send, Msg}, _, #{socket := undefined, queue := Queue} = State) ->
-  {reply, ok, State#{queue => queue:in(Msg, Queue)}};
-handle_call({send, Msg}, _,
-            #{transport := T, socket := S, queue := Q} = State) ->
-  Len = iolist_size(Msg),
-  Frame = [integer_to_binary(Len), $\s, Msg],
-  Send = case T of tcp -> fun gen_tcp:send/2; tls -> fun ssl:send/2 end,
-  case Send(S, Frame) of
-    ok ->
-      {reply, ok, State};
-    {error, _} ->
-      self() ! connect,
-      {reply, ok, State#{socket => undefined, queue => queue:in(Msg, Q)}}
-  end.
+handle_call(_, _, State) ->
+  {noreply, State}.
 
 -spec handle_cast(term(), state()) -> et_gen_server:handle_cast_ret(state()).
 handle_cast(_, State) ->
@@ -133,6 +115,59 @@ handle_info(flush, #{transport := T, socket := S, queue := Q} = State) ->
       end;
     empty ->
       {noreply, State#{queue => queue:new()}}
+  end;
+
+handle_info({io_request, From, ReplyAs, Request}, State0) when is_pid(From) ->
+  State = io_request(Request, From, ReplyAs, State0),
+  {noreply, State};
+
+handle_info(Msg, State) ->
+  {noreply, State}.
+
+io_request(Request, From, ReplyAs, State0) ->
+  {Reply, State} = io_request_2(Request, State0),
+  io_reply(From, ReplyAs, Reply),
+  State.
+
+io_request_2({put_chars, unicode, Mod, Func, Args}, State) ->
+  case catch apply(Mod, Func, Args) of
+    Data when is_list(Data); is_binary(Data) ->
+      case wrap_characters_to_binary(Data, unicode) of
+        {ok, Bin} ->
+          State2 = write(Bin, State),
+          {ok, State2};
+        error ->
+          {{error, put_chars}, State}
+      end;
+    _ ->
+      {{error, put_chars}, State}
+  end;
+io_request_2(_, State) ->
+  {{error, unhandled_io_interface}, State}.
+
+io_reply(From, ReplyAs, Reply) ->
+  From ! {io_reply, ReplyAs, Reply}.
+
+wrap_characters_to_binary(Chars, Encoding) ->
+  case unicode:characters_to_binary(Chars, Encoding, utf8) of
+    Bin when is_binary(Bin) ->
+      {ok, Bin};
+    _ ->
+      error
+  end.
+
+write(Msg, #{socket := undefined, queue := Queue} = State) ->
+  State#{queue => queue:in(Msg, Queue)};
+write(Msg, #{transport := T, socket := S, queue := Q} = State) ->
+  Len = iolist_size(Msg),
+  Frame = [integer_to_binary(Len), $\s, Msg],
+  Send = case T of tcp -> fun gen_tcp:send/2; tls -> fun ssl:send/2 end,
+  case Send(S, Frame) of
+    ok ->
+      State;
+    {error, _} ->
+      self() ! connect,
+      State#{socket => undefined, queue => queue:in(Msg, Q)}
   end.
 
 -spec options_connect_options(options()) -> [Options] when
