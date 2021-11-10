@@ -23,10 +23,15 @@ start_link() ->
   supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 init([]) ->
-  Children = [#{id => syslog_default,
-                start =>
-                  {mlog_syslog_device, start_link, [{local, syslog}, #{}]}}],
-  Flags = #{strategy => one_for_one,
-            intensity => 1,
-            period => 5},
+  Children =
+    case application:get_env(mlog, device, standard_error) of
+      standard_error ->
+        [];
+      syslog ->
+        Options = application:get_env(mlog, syslog, #{}),
+        Args = [{local, syslog}, Options],
+        [#{id => syslog,
+           start => {mlog_syslog_device, start_link, Args}}]
+    end,
+  Flags = #{strategy => one_for_one, intensity => 1, period => 5},
   {ok, {Flags, Children}}.
