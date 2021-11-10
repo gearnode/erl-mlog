@@ -121,7 +121,7 @@ handle_info({io_request, From, ReplyAs, Request}, State0) when is_pid(From) ->
   State = io_request(Request, From, ReplyAs, State0),
   {noreply, State};
 
-handle_info(Msg, State) ->
+handle_info(_, State) ->
   {noreply, State}.
 
 io_request(Request, From, ReplyAs, State0) ->
