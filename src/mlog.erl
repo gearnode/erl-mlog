@@ -35,6 +35,10 @@ install() ->
   ok = logger:add_handler(debug, mlog_handler, DebugHandler),
   ok.
 
+-spec device() -> mlog_handler:device().
+device() ->
+  application:get_env(mlog, device, standard_error).
+
 -spec formatter_config() -> mlog_formatter:config().
 formatter_config() ->
   application:get_env(mlog, formatter, #{color => true}).
@@ -62,7 +66,7 @@ primary_config() ->
 
 -spec default_handler() -> logger:handler_config().
 default_handler() ->
-  #{config => #{type => standard_error},
+  #{config => #{device => device()},
     level => info,
     filter_default => log,
     filters =>
@@ -79,7 +83,7 @@ debug_handler() ->
   MainFilter = {debug, {fun logger_filters:level/2,
                         {stop, neq, debug}}},
   ExtraFilters = debug_filters(),
-  #{config => #{type => standard_error},
+  #{config => #{device => device()},
     level => debug,
     filter_default => stop,
     filters => [MainFilter | ExtraFilters],
