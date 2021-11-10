@@ -24,16 +24,16 @@
 
 -spec format(unicode:chardata(), logger:level(), logger:metadata(), config())
             -> unicode:chardata().
-format(String, Level, Metadata, Config) ->
-  lists:join($\s, [header(Level, Metadata, Config),
+format(String, Level, Metadata, _) ->
+  lists:join($\s, [header(Level, Metadata),
                    structured_data(Metadata),
                    msg(String)]).
 
 % https://datatracker.ietf.org/doc/html/rfc5424#section-6.2
--spec header(logger:level(), logger:metadata(), config()) -> iodata().
-header(Level, Metadata, Config) ->
+-spec header(logger:level(), logger:metadata()) -> iodata().
+header(Level, Metadata) ->
   lists:join($\s, [[pri(Level), version()], timestamp(Metadata), hostname(),
-                   app_name(Config), procid(), msgid(Metadata)]).
+                   app_name(), procid(), msgid(Metadata)]).
 
 % https://datatracker.ietf.org/doc/html/rfc5424#section-6.2.1
 -spec pri(logger:level()) -> iodata().
@@ -133,9 +133,9 @@ static_addr(Hostname) ->
   end.
 
 % https://datatracker.ietf.org/doc/html/rfc5424#section-6.2.5
--spec app_name(config()) -> iodata().
-app_name(Config) ->
-  maps:get(application_name, Config, [$-]).
+-spec app_name() -> iodata().
+app_name() ->
+  application:get_env(mlog, application_name, [$-]).
 
 % https://datatracker.ietf.org/doc/html/rfc5424#section-6.2.6
 -spec procid() -> iodata().
