@@ -16,13 +16,25 @@
 
 -export([log/2]).
 
+-export_type([config/0, device/0]).
+
+-type config() :: #{device => device()}.
+
+-type device() :: standard_error | syslog.
+
 -spec log(logger:log_event(), logger:handler_config()) -> ok.
-log(Event = #{meta := Metadata}, Config) ->
-  Self = self(),
-  Device = case maps:get(gl, Metadata, group_leader()) of
-             Self -> standard_error;
-             GroupLeader -> GroupLeader
-           end,
+log(Event = #{meta := Metadata}, #{config := HandlerConfig} = Config) ->
+  Device =
+    case maps:get(device, HandlerConfig) of
+      syslog ->
+        syslog;
+      standard_error ->
+        Self = self(),
+        case maps:get(gl, Metadata, group_leader()) of
+          Self -> standard_error;
+          GroupLeader -> GroupLeader
+        end
+    end,
   Message = format_event(Event, Config),
   io:format(Device, "~ts", [Message]).
 
