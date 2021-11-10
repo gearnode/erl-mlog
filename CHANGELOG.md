@@ -12,3 +12,4 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - [RFC 5425](https://datatracker.ietf.org/doc/html/rfc5424) formatter.
 - [RFC 6587](https://datatracker.ietf.org/doc/html/rfc6587) output
   device.
+- Standard error output device.
