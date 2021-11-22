@@ -184,8 +184,6 @@ escape(<<$", Rest/binary>>, Acc) ->
   escape(Rest, <<Acc/binary, $\\, $">>);
 escape(<<$\\, Rest/binary>>, Acc) ->
   escape(Rest, <<Acc/binary, $\\, $\\>>);
-escape(<<$[, Rest/binary>>, Acc) ->
-  escape(Rest, <<Acc/binary, $\\, $[>>);
 escape(<<$], Rest/binary>>, Acc) ->
   escape(Rest, <<Acc/binary, $\\, $]>>);
 escape(<<A, Rest/binary>>, Acc) ->
