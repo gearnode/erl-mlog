@@ -170,17 +170,10 @@ sd_element(Id, Metadata) ->
 -spec sd_param(atom(), term(), iodata()) -> iodata().
 sd_param(domain, Value, Acc) ->
   [["domain", $=, $", mlog_formatter:format_domain(Value), $"] | Acc];
-sd_param(Key, Value, Acc) when is_integer(Value) ->
-  [[atom_to_binary(Key), $=, $", integer_to_binary(Value), $"] | Acc];
-sd_param(Key, Value, Acc) when is_float(Value) ->
-  [[atom_to_binary(Key), $=, $", float_to_binary(Value), $"] | Acc];
-sd_param(Key, Value, Acc) when is_atom(Value) ->
-  [[atom_to_binary(Key), $=, $", atom_to_binary(Value), $"] | Acc];
-sd_param(Key, Value0, Acc) when is_binary(Value0) ->
-  Value = unicode:characters_to_binary(escape(Value0, <<>>)),
-  [[atom_to_binary(Key), $=, $", Value, $"] | Acc];
-sd_param(_, _, Acc) ->
-  Acc.
+sd_param(Key, Value0, Acc) ->
+  Value1 = mlog_formatter:format_metadata_value(Value0),
+  Value2 = unicode:characters_to_binary(escape(Value1, <<>>)),
+  [[atom_to_binary(Key), $=, $", Value2, $"] | Acc].
 
 -spec escape(binary(), binary()) -> binary().
 escape(<<>>, Acc) ->
