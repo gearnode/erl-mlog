@@ -178,7 +178,7 @@ sd_param(Key, Value, Acc) when is_atom(Value) ->
   [[atom_to_binary(Key), $=, $", atom_to_binary(Value), $"] | Acc];
 sd_param(Key, Value0, Acc) when is_binary(Value0) ->
   Value = unicode:characters_to_binary(escape(Value0, <<>>)),
-  [[atom_to_binary(Key), $=, $", ?BOM, Value, $"] | Acc];
+  [[atom_to_binary(Key), $=, $", unicode:encoding_to_bom(utf8), Value, $"] | Acc];
 sd_param(_, _, Acc) ->
   Acc.
 
@@ -199,4 +199,4 @@ escape(<<A, Rest/binary>>, Acc) ->
 % https://datatracker.ietf.org/doc/html/rfc5424#section-6.4
 -spec msg(iodata()) -> binary().
 msg(String) ->
-  unicode:characters_to_binary([?BOM, String]).
+  unicode:characters_to_binary([unicode:encoding_to_bom(utf8), String]).
