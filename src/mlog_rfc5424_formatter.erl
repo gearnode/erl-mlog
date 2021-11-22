@@ -170,6 +170,8 @@ sd_element(Id, Metadata) ->
 -spec sd_param(atom(), term(), iodata()) -> iodata().
 sd_param(domain, Value, Acc) ->
   [["domain", $=, $", mlog_formatter:format_domain(Value), $"] | Acc];
+sd_param(event, Value, Acc) ->
+  [["event", $=, $", mlog_formatter:format_event(Value), $"] | Acc];
 sd_param(Key, Value0, Acc) ->
   Value1 = mlog_formatter:format_metadata_value(Value0),
   Value2 = unicode:characters_to_binary(escape(Value1, <<>>)),
