@@ -51,6 +51,10 @@ debug_filters() ->
 level() ->
   application:get_env(mlog, level, debug).
 
+-spec metadata() -> map().
+metadata() ->
+  application:get_env(mlog, metadata, #{}).
+
 -spec remove_all_handlers() -> ok.
 remove_all_handlers() ->
   lists:foreach(fun (#{id := Id}) ->
@@ -60,7 +64,7 @@ remove_all_handlers() ->
 -spec primary_config() -> logger:primary_config().
 primary_config() ->
   #{level => level(),
-    metadata => #{},
+    metadata => metadata(),
     filter_default => log,
     filters => []}.
 
