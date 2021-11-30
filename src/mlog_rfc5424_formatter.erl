@@ -167,19 +167,19 @@ sd_element(Id, Metadata) ->
 % https://datatracker.ietf.org/doc/html/rfc5424#section-6.3.3
 -spec sd_param(atom(), term(), iodata()) -> iodata().
 sd_param(domain, Value, Acc) ->
-  [["domain", $=, $", mlog_formatter:format_domain(Value), $"] | Acc];
+  [["domain", $=, $\", mlog_formatter:format_domain(Value), $\"] | Acc];
 sd_param(event, Value, Acc) ->
-  [["event", $=, $", mlog_formatter:format_event(Value), $"] | Acc];
+  [["event", $=, $\", mlog_formatter:format_event(Value), $\"] | Acc];
 sd_param(Key, Value0, Acc) ->
   Value1 = mlog_formatter:format_metadata_value(Value0),
   Value2 = unicode:characters_to_binary(escape(Value1, <<>>)),
-  [[atom_to_binary(Key), $=, $", Value2, $"] | Acc].
+  [[atom_to_binary(Key), $=, $\", Value2, $\"] | Acc].
 
 -spec escape(binary(), binary()) -> binary().
 escape(<<>>, Acc) ->
   Acc;
-escape(<<$", Rest/binary>>, Acc) ->
-  escape(Rest, <<Acc/binary, $\\, $">>);
+escape(<<$\", Rest/binary>>, Acc) ->
+  escape(Rest, <<Acc/binary, $\\, $\">>);
 escape(<<$\\, Rest/binary>>, Acc) ->
   escape(Rest, <<Acc/binary, $\\, $\\>>);
 escape(<<$], Rest/binary>>, Acc) ->
