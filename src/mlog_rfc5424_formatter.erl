@@ -150,8 +150,12 @@ msgid(_) ->
 % https://datatracker.ietf.org/doc/html/rfc5424#section-6.3
 -spec structured_data(logger:metadata()) -> iodata().
 structured_data(Metadata0) ->
-  KS = [time, error_logger, logger_formatter, report_cb, gl],
-  Metadata = maps:without(KS, Metadata0),
+  IgnoredMetadata =
+    [time, % duplicate
+     error_logger, logger_formatter, report_cb, % useless
+     pid, gl, % added by the logger
+     mfa, file, line], % added by log macros
+  Metadata = maps:without(IgnoredMetadata, Metadata0),
   [sd_element("mlog@32473", Metadata)].
 
 % https://datatracker.ietf.org/doc/html/rfc5424#section-6.3.1
