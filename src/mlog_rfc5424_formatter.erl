@@ -133,7 +133,7 @@ static_addr(Hostname) ->
 % https://datatracker.ietf.org/doc/html/rfc5424#section-6.2.5
 -spec app_name() -> iodata().
 app_name() ->
-  application:get_env(mlog, application_name, [$-]).
+  application:get_env(mlog, application_name, "-").
 
 % https://datatracker.ietf.org/doc/html/rfc5424#section-6.2.6
 -spec procid() -> iodata().
@@ -145,7 +145,7 @@ procid() ->
 msgid(#{event := Event}) ->
   mlog_formatter:format_event(Event);
 msgid(_) ->
-  [$-].
+  "-".
 
 % https://datatracker.ietf.org/doc/html/rfc5424#section-6.3
 -spec structured_data(logger:metadata()) -> iodata().
