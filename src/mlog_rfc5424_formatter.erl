@@ -16,8 +16,6 @@
 
 -include_lib("kernel/include/inet.hrl").
 
--define(BOM, [16#EF, 16#BB, 16#BF]).
-
 -export([format/4]).
 
 -type config() :: mlog_formatter:config().
