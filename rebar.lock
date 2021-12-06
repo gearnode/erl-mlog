@@ -12,7 +12,7 @@
   0},
  {<<"term">>,
   {git,"https://github.com/exograd/erl-term.git",
-       {ref,"d796f63d5152699c1fdb09b3ab07a9cbfa68991b"}},
+       {ref,"8fe4561175ff4ccac53fbd4ed2e963721c5863ad"}},
   0},
  {<<"uri">>,
   {git,"https://github.com/galdor/erl-uri.git",
