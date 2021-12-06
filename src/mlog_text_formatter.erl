@@ -141,7 +141,9 @@ indent_text(Text, Column) ->
 maybe_colorize(String, Color, Config) ->
   case maps:get(color, Config, false) of
     true ->
-      term:with_text_attributes(String, [{foreground, Color}]);
+      term:encode([{sequence, {sgr, [{foreground, Color}]}},
+                   {text, String},
+                   {sequence, {sgr, [default]}}]);
     false ->
       String
   end.
