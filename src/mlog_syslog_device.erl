@@ -34,16 +34,16 @@
                    queue := queue:queue(unicode:chardata()),
                    backoff := backoff:backoff()}.
 
--spec start_link(et_gen_server:name(), options()) -> Result when
+-spec start_link(c_gen_server:name(), options()) -> Result when
     Result :: {ok, pid()} | ignore | {error, term()}.
 start_link(Name, Options) ->
   gen_server:start_link(Name, ?MODULE, [Options], []).
 
--spec stop(et_gen_server:ref()) -> ok.
+-spec stop(c_gen_server:ref()) -> ok.
 stop(Ref) ->
   gen_server:stop(Ref, normal, infinity).
 
--spec init(list()) -> et_gen_server:init_ret(state()).
+-spec init(list()) -> c_gen_server:init_ret(state()).
 init([Options]) ->
   self() ! connect,
   Backoff = backoff:type(backoff:init(1000, 60000), jitter),
@@ -53,23 +53,23 @@ init([Options]) ->
             queue => queue:new()},
   {ok, State}.
 
--spec terminate(et_gen_server:terminate_reason(), state()) -> ok.
+-spec terminate(c_gen_server:terminate_reason(), state()) -> ok.
 terminate(_Reason, #{transport := tcp, socket := Socket}) ->
   gen_tcp:close(Socket);
 terminate(_Reason, #{transport := tls, socket := Socket}) ->
   _ = ssl:close(Socket),
   ok.
 
--spec handle_call(term(), {pid(), et_gen_server:request_id()}, state()) ->
-        et_gen_server:handle_call_ret(state()).
+-spec handle_call(term(), {pid(), c_gen_server:request_id()}, state()) ->
+        c_gen_server:handle_call_ret(state()).
 handle_call(_, _, State) ->
   {noreply, State}.
 
--spec handle_cast(term(), state()) -> et_gen_server:handle_cast_ret(state()).
+-spec handle_cast(term(), state()) -> c_gen_server:handle_cast_ret(state()).
 handle_cast(_, State) ->
   {noreply, State}.
 
--spec handle_info(term(), state()) -> et_gen_server:handle_info_ret(state()).
+-spec handle_info(term(), state()) -> c_gen_server:handle_info_ret(state()).
 handle_info({Event, _}, #{backoff := Backoff} = State) when
     Event =:= tcp_closed;
     Event =:= ssl_closed ->

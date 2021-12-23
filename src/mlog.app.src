@@ -22,7 +22,7 @@
     stdlib,
     term,
     ssl,
-    et,
+    core,
     backoff,
     public_key,
     uri,
